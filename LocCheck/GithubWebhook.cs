@@ -35,7 +35,7 @@ namespace LocCheck
             new PullRequestHandler(
                 new PullRequestInfoProvider(),
                 new RepositorySettingsProvider(),
-                new WorkInProgressPullRequestPolicy(),
+                new XlfFileChangePullRequestPolicy(),
                 new CommitStatusWriter(SettingsProvider));
 
         [FunctionName("GithubWebhook")]

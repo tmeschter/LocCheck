@@ -9,30 +9,28 @@ namespace LocCheck.Services
     {
         public async Task<PullRequestInfo> GetPullRequestInfoAsync(PullRequestContext context)
         {
-            context.Log.Verbose($"Getting commits for pull request #{context.Payload.Number}");
-            var commits = await GetCommitsAsync(context);
-            context.Log.Verbose($"Getting labels for pull request #{context.Payload.Number}");
-            var labels = await GetLabelsAsync(context);
+            context.Log.Verbose($"Getting files for pull request #{context.Payload.Number}");
+            var files = await GetFilesAsync(context);
+            context.Log.Verbose($"Getting comments for pull request #{context.Payload.Number}");
+            var comments = await GetCommentsAsync(context);
             return new PullRequestInfo
             {
-                Title = context.Payload.PullRequest.Title,
-                Labels = labels.Select(l => l.Name),
-                SourceRepositoryFullName = context.Payload.Repository.FullName,
-                Head = context.Payload.PullRequest.Head.Sha,
-                CommitMessages = commits.Select(c => c.Commit.Message)
+                Base = context.Payload.PullRequest.Base.Ref,
+                Files = files.Select(f => f.FileName),
+                Comments = comments.Select(c => c.Body)
             };
         }
 
-        private Task<IReadOnlyList<PullRequestCommit>> GetCommitsAsync(PullRequestContext context)
+        private Task<IReadOnlyList<PullRequestFile>> GetFilesAsync(PullRequestContext context)
         {
             var client = new GitHubClient(context.GithubConnection);
-            return client.PullRequest.Commits(context.Payload.Repository.Id, context.Payload.PullRequest.Number);
+            return client.PullRequest.Files(context.Payload.Repository.Id, context.Payload.PullRequest.Number);
         }
 
-        private Task<IReadOnlyList<Label>> GetLabelsAsync(PullRequestContext context)
+        private Task<IReadOnlyList<PullRequestReviewComment>> GetCommentsAsync(PullRequestContext context)
         {
-            var client = new IssuesLabelsClient(new ApiConnection(context.GithubConnection));
-            return client.GetAllForIssue(context.Payload.Repository.Id, context.Payload.PullRequest.Number);
+            var client = new GitHubClient(context.GithubConnection);
+            return client.PullRequest.ReviewComment.GetAll(context.Payload.Repository.Id, context.Payload.PullRequest.Number);
         }
     }
 }

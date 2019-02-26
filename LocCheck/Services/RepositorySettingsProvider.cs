@@ -11,17 +11,7 @@ namespace LocCheck.Services
     {
         private static readonly RepositorySettings DefaultSettings = new RepositorySettings
         {
-            WipLabels = new[]
-            {
-                "wip",
-                "work-in-progress",
-                "in-progress"
-            },
-            WipKeywords = new[]
-            {
-                new Keyword { Text = "DO NOT MERGE", CaseSensitive = false },
-                new Keyword { Text = "WIP", CaseSensitive = false }
-            }
+            ProtectedBranches = new string[] { }
         };
 
         private static readonly IDeserializer YamlDeserializer = CreateYamlDeserializer();
@@ -37,10 +27,9 @@ namespace LocCheck.Services
         {
             try
             {
-                var baseRef = context.Payload.PullRequest.Base.Ref;
                 var repositoryId = context.Payload.Repository.Id;
                 var client = new GitHubClient(context.GithubConnection);
-                var contents = await client.Repository.Content.GetAllContentsByRef(repositoryId, "dontmergemeyet.yml", baseRef);
+                var contents = await client.Repository.Content.GetAllContentsByRef(repositoryId, "loccheck.yml", reference: null);
                 var yaml = contents.FirstOrDefault()?.Content;
                 var settings = !string.IsNullOrEmpty(yaml)
                     ? YamlDeserializer.Deserialize<RepositorySettings>(yaml)
