@@ -21,7 +21,9 @@ namespace LocCheck.Services
             if (!context.RepositorySettings.ProtectedBranches.Contains(context.PullRequestInfo.Base))
             {
                 context.Log.Info("Pull request is into unprotected branch.");
-                return (CommitState.Success, "Localization changes are allowed in this branch.");
+                context.Log.Info($"  Base branch: {context.PullRequestInfo.Base}");
+                context.Log.Info($"  Protected branches: {string.Join(";", context.RepositorySettings.ProtectedBranches)}");
+                return (CommitState.Success, $"Localization changes are allowed in this branch: {context.PullRequestInfo.Base}");
             }
 
             if (LocUnblockedViaComment(context.PullRequestInfo.Comments))

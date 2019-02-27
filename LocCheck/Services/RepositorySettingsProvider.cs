@@ -29,7 +29,7 @@ namespace LocCheck.Services
             {
                 var repositoryId = context.Payload.Repository.Id;
                 var client = new GitHubClient(context.GithubConnection);
-                var contents = await client.Repository.Content.GetAllContentsByRef(repositoryId, "loccheck.yml", reference: null);
+                var contents = await client.Repository.Content.GetAllContents(repositoryId, "loccheck.yml");
                 var yaml = contents.FirstOrDefault()?.Content;
                 var settings = !string.IsNullOrEmpty(yaml)
                     ? YamlDeserializer.Deserialize<RepositorySettings>(yaml)
