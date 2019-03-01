@@ -37,7 +37,7 @@ namespace LocCheck.Services
 
         private bool LocUnblockedViaComment(IEnumerable<string> comments)
         {
-            return comments.Any(c => c == "Ublock LocCheck");
+            return comments.Any(c => c == "Unblock LocCheck");
         }
 
         private bool TouchesXlfFiles(IEnumerable<string> files)
