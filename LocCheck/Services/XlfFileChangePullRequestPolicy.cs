@@ -10,23 +10,27 @@ namespace LocCheck.Services
 {
     internal class XlfFileChangePullRequestPolicy : IPullRequestPolicy
     {
-        public (CommitState state, string description) GetStatus(PullRequestContext context)
+        public async Task<(CommitState state, string description)> GetStatusAsync(PullRequestContext context)
         {
-            if (!TouchesXlfFiles(context.PullRequestInfo.Files))
+            var baseBranch = await context.PullRequestInfoProvider.GetBaseAsync(context);
+            if (!context.RepositorySettings.ProtectedBranches.Contains(baseBranch))
+            {
+                context.Log.Info("Pull request is into unprotected branch.");
+                context.Log.Info($"  Base branch: {baseBranch}");
+                context.Log.Info($"  Protected branches: {string.Join(";", context.RepositorySettings.ProtectedBranches)}");
+                return (CommitState.Success, $"Localization changes are allowed in branch {baseBranch}.");
+            }
+
+            var files = await context.PullRequestInfoProvider.GetFilesAsync(context);
+            if (!TouchesXlfFiles(files))
             {
                 context.Log.Info("Pull request does not change .xlf files");
                 return (CommitState.Success, "No localization changes.");
             }
 
-            if (!context.RepositorySettings.ProtectedBranches.Contains(context.PullRequestInfo.Base))
-            {
-                context.Log.Info("Pull request is into unprotected branch.");
-                context.Log.Info($"  Base branch: {context.PullRequestInfo.Base}");
-                context.Log.Info($"  Protected branches: {string.Join(";", context.RepositorySettings.ProtectedBranches)}");
-                return (CommitState.Success, $"Localization changes are allowed in this branch: {context.PullRequestInfo.Base}");
-            }
+            var comments = await context.PullRequestInfoProvider.GetCommentsAsync(context);
 
-            if (LocUnblockedViaComment(context.PullRequestInfo.Comments))
+            if (LocUnblockedViaComment(comments))
             {
                 context.Log.Info("Pull request is explicitly unblocked.");
                 return (CommitState.Success, "Localization changes have been explicitly unblocked.");

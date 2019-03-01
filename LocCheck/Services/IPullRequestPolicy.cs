@@ -1,9 +1,10 @@
-﻿using Octokit;
+﻿using System.Threading.Tasks;
+using Octokit;
 
 namespace LocCheck.Services
 {
     public interface IPullRequestPolicy
     {
-        (CommitState state, string description) GetStatus(PullRequestContext context);
+        Task<(CommitState state, string description)> GetStatusAsync(PullRequestContext context);
     }
 }

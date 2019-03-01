@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using LocCheck.Services;
 using Microsoft.Azure.WebJobs.Host;
 using Octokit;
 
@@ -20,7 +21,7 @@ namespace LocCheck
         public PullRequestEventPayload Payload { get; }
         public IConnection GithubConnection { get; }
         public TraceWriter Log { get; }
-        public PullRequestInfo PullRequestInfo { get; set; }
+        public IPullRequestInfoProvider PullRequestInfoProvider { get; set; }
         public RepositorySettings RepositorySettings { get; set; }
     }
 }
