@@ -28,7 +28,7 @@ namespace LocCheck.Services
             context.Log.Verbose($"Getting comments for pull request #{context.Payload.Number}");
 
             var client = new GitHubClient(context.GithubConnection);
-            var rawComments = await client.PullRequest.ReviewComment.GetAll(context.Payload.Repository.Id, context.Payload.PullRequest.Number);
+            var rawComments = await client.Issue.Comment.GetAllForIssue(context.Payload.Repository.Id, context.Payload.PullRequest.Number);
             var comments = rawComments.Select(c => c.Body);
 
             return comments;
