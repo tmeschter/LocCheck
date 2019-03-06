@@ -1,12 +1,10 @@
 ﻿using System;
 using System.IdentityModel.Tokens.Jwt;
-using System.Net.Http;
-using System.Net.Http.Headers;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using LocCheck.Extensions;
 using Microsoft.IdentityModel.Tokens;
-using Newtonsoft.Json.Linq;
+using Octokit;
 
 namespace LocCheck.Services
 {
@@ -41,32 +39,15 @@ namespace LocCheck.Services
         public async Task<string> GetTokenForInstallationAsync(long installationId)
         {
             var appToken = await GetTokenForApplicationAsync();
-            using (var client = new HttpClient())
+
+            var appClient = new GitHubClient(new ProductHeaderValue("LocCheck"))
             {
-                string url = $"https://api.github.com/installations/{installationId}/access_tokens";
-                var request = new HttpRequestMessage(HttpMethod.Post, url)
-                {
-                    Headers =
-                    {
-                        Authorization = new AuthenticationHeaderValue("Bearer", appToken),
-                        UserAgent =
-                        {
-                            ProductInfoHeaderValue.Parse("DontMergeMeYet"),
-                        },
-                        Accept =
-                        {
-                            MediaTypeWithQualityHeaderValue.Parse("application/vnd.github.machine-man-preview+json")
-                        }
-                    }
-                };
-                using (var response = await client.SendAsync(request))
-                {
-                    response.EnsureSuccessStatusCode();
-                    var json = await response.Content.ReadAsStringAsync();
-                    var obj = JObject.Parse(json);
-                    return obj["token"]?.Value<string>();
-                }
-            }
+                Credentials = new Credentials(appToken, AuthenticationType.Bearer)
+            };
+
+            var installationToken = await appClient.GitHubApps.CreateInstallationToken(installationId);
+
+            return installationToken.Token;
         }
     }
 }
